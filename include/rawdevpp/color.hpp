@@ -119,7 +119,7 @@ namespace rawdevpp
 
             auto f = dj / (dj - di);
 
-            Temperature ret;
+            Temperature ret = Temperature::Zero(2, xy.cols());
             ret.row(0) = 1000000.0 / ((ctx.ruvtTable(index, Context::R) - ctx.ruvtTable(index - 1, Context::R)) * f + ctx.ruvtTable(index - 1, Context::R));
 
             auto ud = us - ((ctx.ruvtTable(index, Context::U) - ctx.ruvtTable(index - 1, Context::U)) * f + ctx.ruvtTable(index - 1, Context::U));
@@ -205,7 +205,7 @@ namespace rawdevpp
             Eigen::Matrix3d bradfordMatrix;
             bradfordMatrix << 0.8951, 0.2664, -0.1614, -0.7502, 1.7135, 0.0367, 0.0389, -0.0685, 1.0296;
 
-            Eigen::Matrix3d ADT = Eigen::Matrix3d::Identity() * ((bradfordMatrix * target.transpose().matrix()).array() / (bradfordMatrix * source.transpose().matrix()).array()).matrix();
+            Eigen::Matrix3d ADT = ((bradfordMatrix * target.matrix().col(0)).array() / (bradfordMatrix * source.matrix().col(0)).array()).matrix().asDiagonal();
             return bradfordMatrix.inverse() * ADT * bradfordMatrix;
         }
 
@@ -213,7 +213,7 @@ namespace rawdevpp
         {
             XY wb(2, 1);
             wb(0, 0) = 0.34567;
-            wb(2, 0) = 0.35850;
+            wb(1, 0) = 0.35850;
             return XY2XYZ(wb);
         }
 
@@ -221,7 +221,7 @@ namespace rawdevpp
         {
             XY wb(2, 1);
             wb(0, 0) = 0.31271;
-            wb(2, 0) = 0.32902;
+            wb(1, 0) = 0.32902;
             return XY2XYZ(wb);
         }
 

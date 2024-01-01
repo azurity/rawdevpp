@@ -181,7 +181,7 @@ namespace rawdevpp
                 std::optional<TIFF::DE> opcodeList3;
                 std::optional<TIFF::DE> noiseProfile;
 
-                static ParsedIFD parse(const TIFF::IFD &base, std::istream &file, bool byteswap)
+                static ParsedIFD parse(const TIFF::IFD &base, size_t colorPlanes, std::istream &file, bool byteswap)
                 {
                     auto getTagValues = [](const TIFF::IFD &ifd, uint16_t tag) -> std::optional<TIFF::DE>
                     {
@@ -192,7 +192,6 @@ namespace rawdevpp
                     ParsedIFD ret;
                     ret.base = base;
 
-                    size_t colorPlanes = base.getImageInfo(file, byteswap).samplePerPixel;
                     ret.colorPlanes = colorPlanes;
 
                     // TIFF-EP
@@ -289,13 +288,13 @@ namespace rawdevpp
             TIFF tiff;
             std::vector<ParsedIFD> images;
 
-            static DNG parse(std::istream &file)
+            static DNG parse(std::istream &file, size_t colorPlanes)
             {
                 DNG ret;
                 ret.tiff = TIFF::parse(file);
 
                 for (const auto &it : ret.tiff.images)
-                    ret.images.push_back(ParsedIFD::parse(it, file, ret.tiff.byteswap));
+                    ret.images.push_back(ParsedIFD::parse(it, colorPlanes, file, ret.tiff.byteswap));
                 return ret;
             }
         };
@@ -357,6 +356,7 @@ namespace rawdevpp
             {
                 XY current = XYZ2XY(matrixXYZ2Camera(ctx, ifd, last).inverse() * neutralWhiteBalance);
                 d = std::abs(last(0, 0) - current(0, 0)) + std::abs(last(1, 0) - current(1, 0));
+                last = current;
             } while (d > 0.0000001);
 
             return last;
